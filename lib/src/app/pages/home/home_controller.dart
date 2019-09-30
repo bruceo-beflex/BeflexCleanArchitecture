@@ -8,14 +8,18 @@ class HomeController extends Controller {
   int _counter;
   User _user;
   int _userCount;
+  List<User> _users;
+
   int get counter => _counter;
   int get userCount => _userCount;
-  User get user => _user; // data used by the View
+  User get user => _user;
+  List<User> get users => _users;
 
   final HomePresenter homePresenter;
   // Presenter should always be initialized this way
   HomeController(dynamic usersRepo)
       : _counter = 0,
+      _userCount = 0,
         homePresenter = HomePresenter(usersRepo),
         super();
 
@@ -26,6 +30,10 @@ class HomeController extends Controller {
       print("Add completed");
     };
 
+    homePresenter.addUserOnNext = (bool result){
+      print("Adding user : "+  result.toString());
+    };
+
     homePresenter.addUserOnError = (e){
       print('Could not add user.');
       ScaffoldState state = getState();
@@ -34,11 +42,13 @@ class HomeController extends Controller {
       refreshUI();
     };
 
-    homePresenter.addUserOnNext = (result) {
-      print("adding user : " + result.toString());
-      ScaffoldState state = getState();
-      state.showSnackBar(SnackBar(content: Text(result ? "Succeeded to add an user " : "Failed to add an user ")));
+
+    homePresenter.getAllUsersOnNext = (result){
+      print("get all user handler");
+      getAllUsersResult(result);
     };
+
+    
 
     homePresenter.getUserOnNext = (result) {
       if (result is int) {
@@ -49,6 +59,8 @@ class HomeController extends Controller {
 
       refreshUI(); // Refreshes the UI manually
     };
+
+    
     homePresenter.getUserOnComplete = () {
       print('User retrieved');
     };
@@ -61,6 +73,12 @@ class HomeController extends Controller {
       _user = null;
       refreshUI(); // Refreshes the UI manually
     };
+  }
+
+  getAllUsersResult(List<User> result) {
+    _users = result;
+    _userCount = _users.length;
+    refreshUI();
   }
 
   void getUser() => homePresenter.getUser('test-uid');

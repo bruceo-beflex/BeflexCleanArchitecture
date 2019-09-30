@@ -4,5 +4,5 @@ abstract class UsersRepository {
   Future<User> getUser(String uid);
   Future<List<User>> getAllUsers();
   Future<int> getUserCount();
-  Future<bool> addUser(String name, double amount);
+  Future<bool> addUser(User user);
 }

@@ -1,9 +1,9 @@
+import 'package:beflex_clean_architecture/src/app/widgets/user_tile_widget.dart';
 import 'package:beflex_clean_architecture/src/data/repositories/data_users_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_clean_architecture/flutter_clean_architecture.dart';
 
 import 'home_controller.dart';
-
 
 class HomePage extends View {
   HomePage({Key key}) : super(key: key);
@@ -14,13 +14,19 @@ class HomePage extends View {
       _HomePageState(HomeController(DataUsersRepository()));
 }
 
-class _HomePageState extends ViewState<HomePage, HomeController>{
+class _HomePageState extends ViewState<HomePage, HomeController> {
   _HomePageState(HomeController controller) : super(controller);
-
+  final List<String> _listViewData = [
+    "A List View with many Text - Here's one!",
+    "A List View with many Text - Here's another!",
+    "A List View with many Text - Here's more!",
+    "A List View with many Text - Here's more!",
+    "A List View with many Text - Here's more!",
+    "A List View with many Text - Here's more!",
+  ];
   final nameController = TextEditingController();
   final depositController = TextEditingController();
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,41 +34,34 @@ class _HomePageState extends ViewState<HomePage, HomeController>{
         title: Text("Home"),
       ),
       body: Scaffold(
-        key: globalKey, // built in global key for the ViewState for easy access in the controller
+        key:
+            globalKey, // built in global key for the ViewState for easy access in the controller
         body: Center(
-          child: ListView(
+          child: Column(
             children: <Widget>[
+              SizedBox(height: 30,),
               Text(
                 // use data provided by the controller
                 'Button pressed ${controller.counter} times.',
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(hintText: 'Enter a name'),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: depositController,
-                  decoration: InputDecoration(hintText: 'Enter a mount of deposit'),
-                ),
-              ),
-              RaisedButton(onPressed: (){
-                controller.addUser(nameController.text, double.parse( depositController.text));
-              },
-              child: Text("Add User"),
-              ),
-
-
-              Text(
-                'The current user is',
+              SizedBox(
+                height: 20,
               ),
               Text(
-                controller.user == null ? '' : '${controller.user}',
-                style: Theme.of(context).textTheme.display1,
+                'Number of User : ${controller.userCount}.',
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Container(
+                height: 80,
+                width: 200,
+                child: RaisedButton(
+                  onPressed: () {
+                    _asyncInputDialog(context);
+                  },
+                  child: Text("Add User"),
+                ),
               ),
               RaisedButton(
                 onPressed: controller.getUser,
@@ -72,14 +71,16 @@ class _HomePageState extends ViewState<HomePage, HomeController>{
                 ),
                 color: Colors.blue,
               ),
-              RaisedButton(
-                onPressed: controller.getUserwithError,
-                child: Text(
-                  'Get User Error',
-                  style: TextStyle(color: Colors.white),
-                ),
-                color: Colors.blue,
-              )
+              Expanded(
+                  child: controller.userCount > 0 ? ListView.builder(
+                itemCount: controller.userCount ?? 0,
+                itemBuilder: (BuildContext context, int index) {
+                  print("index : $index");
+                  print(controller.users[index].name);
+                  return UserTileWidget(controller.users[index].name,controller.users[index].accounts.length );
+                },
+              ) : Container()
+              ) ,
             ],
           ),
         ),
@@ -93,4 +94,49 @@ class _HomePageState extends ViewState<HomePage, HomeController>{
     );
   }
 
+  Future<String> _asyncInputDialog(BuildContext context) async {
+    return showDialog<String>(
+      context: context,
+      barrierDismissible:
+          false, // dialog is dismissible with a tap on the barrier
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Enter current team'),
+          content: new Row(
+            children: <Widget>[
+              new Expanded(
+                  child: new TextField(
+                controller: nameController,
+                autofocus: true,
+                decoration: new InputDecoration(
+                    labelText: 'Name', hintText: 'Enter name'),
+              )),
+              SizedBox(
+                width: 10,
+              ),
+              new Expanded(
+                  child: new TextField(
+                autofocus: true,
+                decoration: new InputDecoration(
+                    labelText: 'Amount', hintText: 'Enter amount of deposit'),
+                controller: depositController,
+              ))
+            ],
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Ok'),
+              onPressed: () {
+                controller.addUser(
+                    nameController.text, double.parse(depositController.text));
+                nameController.clear();
+                depositController.clear();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

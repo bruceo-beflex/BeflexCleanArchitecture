@@ -4,8 +4,6 @@ import 'package:beflex_clean_architecture/src/domain/repositories/user_repositor
 import 'package:flutter_clean_architecture/flutter_clean_architecture.dart';
 import 'package:rxdart/rxdart.dart';
 
-enum GetUserUseCaseParamsEnums { getUser, getAllUsers, getUserCount }
-
 class GetUserUseCase
     extends UseCase<GetUserUseCaseResponse, GetUserUseCaseParams> {
   final UsersRepository usersRepository;
@@ -18,22 +16,9 @@ class GetUserUseCase
         StreamController();
 
     try {
-      switch (params.getUserUseCaseParamEnum) {
-        case GetUserUseCaseParamsEnums.getUser:
-          User user = await usersRepository.getUser(params.uid);
-          controller.add(GetUserUseCaseResponse(user));
+      User user = await usersRepository.getUser(params.uid);
+      controller.add(GetUserUseCaseResponse(user));
 
-          break;
-        case GetUserUseCaseParamsEnums.getAllUsers:
-          List<User> users = await usersRepository.getAllUsers();
-          controller.add(GetUserUseCaseResponse(users));
-          break;
-        case GetUserUseCaseParamsEnums.getUserCount:
-          int count = await usersRepository.getUserCount();
-          controller.add(GetUserUseCaseResponse(count));
-          break;
-      }
-      
       logger.finest('GetUserUseCase successful.');
       controller.close();
 
@@ -50,11 +35,10 @@ class GetUserUseCase
 
 class GetUserUseCaseParams {
   final String uid;
-  final GetUserUseCaseParamsEnums getUserUseCaseParamEnum;
-  GetUserUseCaseParams(this.getUserUseCaseParamEnum, {this.uid});
+  GetUserUseCaseParams(this.uid);
 }
 
 class GetUserUseCaseResponse {
-  dynamic input;
-  GetUserUseCaseResponse(this.input);
+  dynamic response;
+  GetUserUseCaseResponse(this.response);
 }
