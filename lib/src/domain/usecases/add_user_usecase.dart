@@ -36,9 +36,6 @@ class AddUserUseCase extends UseCase<AddUserUseCaseResponse, AddUserUseCaseParam
     }
     return Observable(controller.stream);
   }
-  
-
-
 }
 
 class AddUserUseCaseResponse {

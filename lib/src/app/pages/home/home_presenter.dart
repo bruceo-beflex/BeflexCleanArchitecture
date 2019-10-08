@@ -1,5 +1,7 @@
+import 'package:beflex_clean_architecture/src/data/repositories/data_users_repository.dart';
 import 'package:beflex_clean_architecture/src/domain/usecases/add_user_usecase.dart';
 import 'package:beflex_clean_architecture/src/domain/usecases/get_all_users_usecase.dart';
+import 'package:beflex_clean_architecture/src/domain/usecases/get_user_count_usecase.dart';
 import 'package:beflex_clean_architecture/src/domain/usecases/get_user_usecase.dart';
 import 'package:flutter_clean_architecture/flutter_clean_architecture.dart';
 
@@ -14,14 +16,18 @@ class HomePresenter extends Presenter {
 
   Function getAllUsersOnNext;
 
+  Function getUserCountFromStream;
+
   final GetUserUseCase getUserUseCase;
   final GetAllUsersUseCase getAllUsersUseCase;
   final AddUserUseCase addUserUseCase;
+  final GetUserCountUsecase getUserCountUseCase;
 
-  HomePresenter(usersRepo)
-      : getUserUseCase = GetUserUseCase(usersRepo),
-        addUserUseCase = AddUserUseCase(usersRepo),
-        getAllUsersUseCase = GetAllUsersUseCase(usersRepo);
+  HomePresenter()
+      : getUserUseCase = GetUserUseCase(DataUsersRepository()),
+        addUserUseCase = AddUserUseCase(DataUsersRepository()),
+        getAllUsersUseCase = GetAllUsersUseCase(DataUsersRepository()),
+        getUserCountUseCase = GetUserCountUsecase(DataUsersRepository());
 
   void getUser(String uid) {
     // execute getUseruserCase
@@ -39,12 +45,42 @@ class HomePresenter extends Presenter {
         _AddUserUseCaseObserver(this), AddUserUseCaseParams(name, amount));
   }
 
+  void getUserCount(){
+    getUserCountUseCase.execute(_GetUserCountUseCaseObserver(this));
+  }
+
   @override
   void dispose() {
     getUserUseCase.dispose();
     addUserUseCase.dispose();
   }
 }
+
+class _GetUserCountUseCaseObserver extends Observer<Stream<int>>{
+  final HomePresenter presenter;
+  _GetUserCountUseCaseObserver(this.presenter);
+  @override
+  void onComplete() {
+    print("oncomplete count");
+  }
+
+  @override
+  void onError(e) {
+    print("on error count");
+  }
+
+  @override
+  void onNext(response) {
+    // response.listen((onData){
+    //   print("data coming in " + onData.toString());
+    // });
+    assert(presenter.getUserCountFromStream != null);
+    presenter.getUserCountFromStream(response);
+    
+  }
+
+}
+
 
 class _AddUserUseCaseObserver extends Observer<AddUserUseCaseResponse> {
   final HomePresenter presenter;
@@ -53,7 +89,6 @@ class _AddUserUseCaseObserver extends Observer<AddUserUseCaseResponse> {
   void onComplete() {
     assert(presenter.addUserOnComplete != null);
     presenter.addUserOnComplete();
-    presenter.getAllUsers();
   }
 
   @override
@@ -97,7 +132,6 @@ class _GetUserUseCaseObserver extends Observer<GetUserUseCaseResponse> {
   void onComplete() {
     assert(presenter.getUserOnComplete != null);
     presenter.getUserOnComplete();
-    
   }
 
   @override
@@ -111,13 +145,4 @@ class _GetUserUseCaseObserver extends Observer<GetUserUseCaseResponse> {
     assert(presenter.getUserOnNext != null);
     presenter.getUserOnNext(response);
   }
-}
-
-abstract class Abstrction{
-
-}
-
-class Imple{
-  Abstrction abs;
-
 }

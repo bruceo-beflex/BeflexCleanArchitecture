@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:beflex_clean_architecture/src/domain/entities/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_clean_architecture/flutter_clean_architecture.dart';
@@ -15,26 +17,41 @@ class HomeController extends Controller {
   User get user => _user;
   List<User> get users => _users;
 
+  StreamSubscription countsub;
+
   final HomePresenter homePresenter;
   // Presenter should always be initialized this way
-  HomeController(dynamic usersRepo)
+  HomeController()
       : _counter = 0,
-      _userCount = 0,
-        homePresenter = HomePresenter(usersRepo),
-        super();
+        _userCount = 0,
+        homePresenter = HomePresenter(),
+        super() {
+    homePresenter.getUserCount();
+  }
 
   @override
   // this is called automatically by the parent class
   void initListeners() {
+    homePresenter.getUserCountFromStream = (Stream<int> data) {
+      countsub = data.listen((onData){
+        print("listening " + onData.toString());
+        _userCount = onData;
+        refreshUI();
+        
+
+      });
+      print("something happened in controller");
+    };
+
     homePresenter.addUserOnComplete = () {
       print("Add completed");
     };
 
-    homePresenter.addUserOnNext = (bool result){
-      print("Adding user : "+  result.toString());
+    homePresenter.addUserOnNext = (bool result) {
+      print("Adding user : " + result.toString());
     };
 
-    homePresenter.addUserOnError = (e){
+    homePresenter.addUserOnError = (e) {
       print('Could not add user.');
       ScaffoldState state = getState();
       state.showSnackBar(SnackBar(content: Text(e.message)));
@@ -42,25 +59,15 @@ class HomeController extends Controller {
       refreshUI();
     };
 
-
-    homePresenter.getAllUsersOnNext = (result){
+    homePresenter.getAllUsersOnNext = (result) {
       print("get all user handler");
       getAllUsersResult(result);
     };
 
-    
-
     homePresenter.getUserOnNext = (result) {
-      if (result is int) {
-        _userCount = result;
-      } else {
-        _user = user;
-      }
-
-      refreshUI(); // Refreshes the UI manually
+      // Refreshes the UI manually
     };
 
-    
     homePresenter.getUserOnComplete = () {
       print('User retrieved');
     };
@@ -78,7 +85,7 @@ class HomeController extends Controller {
   getAllUsersResult(List<User> result) {
     _users = result;
     _userCount = _users.length;
-    refreshUI();
+    //refreshUI();
   }
 
   void getUser() => homePresenter.getUser('test-uid');
@@ -95,6 +102,7 @@ class HomeController extends Controller {
   @override
   void dispose() {
     homePresenter.dispose(); // don't forget to dispose of the presenter
+    countsub.cancel();
     super.dispose();
   }
 }

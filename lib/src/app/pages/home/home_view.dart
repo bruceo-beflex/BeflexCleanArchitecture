@@ -1,5 +1,4 @@
 import 'package:beflex_clean_architecture/src/app/widgets/user_tile_widget.dart';
-import 'package:beflex_clean_architecture/src/data/repositories/data_users_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_clean_architecture/flutter_clean_architecture.dart';
 
@@ -11,19 +10,12 @@ class HomePage extends View {
   @override
   _HomePageState createState() =>
       // inject dependencies inwards
-      _HomePageState(HomeController(DataUsersRepository()));
+      _HomePageState(HomeController());
 }
 
 class _HomePageState extends ViewState<HomePage, HomeController> {
   _HomePageState(HomeController controller) : super(controller);
-  final List<String> _listViewData = [
-    "A List View with many Text - Here's one!",
-    "A List View with many Text - Here's another!",
-    "A List View with many Text - Here's more!",
-    "A List View with many Text - Here's more!",
-    "A List View with many Text - Here's more!",
-    "A List View with many Text - Here's more!",
-  ];
+  
   final nameController = TextEditingController();
   final depositController = TextEditingController();
 
@@ -64,12 +56,11 @@ class _HomePageState extends ViewState<HomePage, HomeController> {
                 ),
               ),
               RaisedButton(
-                onPressed: controller.getUser,
                 child: Text(
                   'Get User',
                   style: TextStyle(color: Colors.white),
                 ),
-                color: Colors.blue,
+                color: Colors.blue, onPressed: () {},
               ),
               Expanded(
                   child: controller.userCount > 0 ? ListView.builder(
